@@ -57,7 +57,8 @@ pub fn getCommitteeCountPerSlot(state: *const consensus.BeaconState, epoch: prim
 ///     start = (len(indices) * index) // count
 ///     end = (len(indices) * uint64(index + 1)) // count
 ///     return [indices[compute_shuffled_index(uint64(i), uint64(len(indices)), seed)] for i in range(start, end)]
-/// Note: Caller is responsible for freeing the returned slice.
+///
+/// Caller owns returned memory.
 pub fn computeCommittee(indices: []const primitives.ValidatorIndex, seed: primitives.Bytes32, index: u64, count: u64, allocator: std.mem.Allocator) ![]primitives.ValidatorIndex {
     const len = indices.len;
     const start = @divFloor(len * index, count);

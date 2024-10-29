@@ -27,6 +27,8 @@ const electra = @import("../../consensus/electra/types.zig");
 ///       data=attestation.data,
 ///       signature=attestation.signature,
 ///     )
+///
+/// Caller owns returned memory.
 pub fn getIndexedAttestation(state: *const consensus.BeaconState, attestation: *const consensus.Attestation, allocator: std.mem.Allocator) !consensus.IndexedAttestation {
     // Return the indexed attestation corresponding to `attestation`.
     var attesting_indices = try getAttestingIndices(state, attestation, allocator);
@@ -74,19 +76,22 @@ pub fn isSlashableAttestationData(data1: consensus.AttestationData, data2: conse
 }
 
 /// getCommitteeIndices returns the indices of the committee for the given `committeeBits`.
+///
 /// @param committeeBits The committee bits.
 /// @param allocator The allocator to use.
 /// @return The indices of the committee.
 /// Spec pseudocode definition:
 /// def get_committee_indices(committee_bits: Bitvector) -> Sequence[CommitteeIndex]:
 ///     return [CommitteeIndex(index) for index, bit in enumerate(committee_bits) if bit]
+///
+/// Caller owns returned memory.
 pub fn getCommitteeIndices(committeeBits: []const bool, allocator: std.mem.Allocator) ![]primitives.CommitteeIndex {
     var indices = try std.ArrayList(primitives.CommitteeIndex).initCapacity(allocator, committeeBits.len);
     defer indices.deinit();
 
     for (committeeBits, 0..) |bit, index| {
         if (bit) {
-            try indices.append(@as(primitives.CommitteeIndex, index));
+            indices.appendAssumeCapacity(@as(primitives.CommitteeIndex, index));
         }
     }
 
